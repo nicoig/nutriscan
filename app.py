@@ -48,20 +48,20 @@ def download_image(image_url):
     return buffered.getvalue()
 
 # Configura el título y subtítulo de la aplicación en Streamlit
-st.title("Asistente de Cocina IA")
+st.title("Chef IA")
 
 # Subtítulo descriptivo del proyecto
 st.markdown("""
     <style>
     .small-font {
-        font-size:20px !important;
+        font-size:18px !important;
     }
     </style>
-    <p class="small-font">Toma la fotografía, identifica los ingredientes y aprende a cocinar un nuevo plato</p>
+    <p class="small-font">Toma una foto a tus ingredientes, te diré que plato puedes preparar y te enseñaré el paso a paso para que aprendas a cocinarlo</p>
     """, unsafe_allow_html=True)
 
 # Imagen
-st.image('img/robot.jpg', width=300)
+st.image('img/robot.jpg', width=350)
 
 # Carga de imagen por el usuario
 uploaded_file = st.file_uploader("Carga una imagen con ingredientes", type=["jpg", "png", "jpeg"])
@@ -134,7 +134,7 @@ if st.button("Enviar") and uploaded_file is not None:
         st.write(instructions)
 
         # Crear imágen del plato con DALL-E
-        st.markdown("**Imagen del plato:**")
+        #st.markdown("**Imagen del plato:**")
         client = OpenAI()
         response = client.images.generate(
             model="dall-e-3",
@@ -177,4 +177,6 @@ if st.session_state.get('processed', False):
 
     # Creación del texto a descargar
     texto_a_descargar = f"Ingredientes:\n{st.session_state['ingredientes']}\n\nPlato:\n{st.session_state['dish']}\n\nPreparación:\n{st.session_state['instructions']}"
-
+    st.download_button("Descargar Receta", texto_a_descargar, "receta.txt", "text/plain")
+    
+    
