@@ -17,6 +17,10 @@
 # agregar en variables de entorno
 # PYTHON_VERSION = 3.9.12
 
+# git remote set-url origin https://github.com/nicoig/asistente-cocina-ia.git
+# git remote -v
+# git push -u origin main
+
 ################################################
 
 
