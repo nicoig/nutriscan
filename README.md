@@ -3,6 +3,8 @@
 ## Descripción
 EcoGPT es una aplicación revolucionaria diseñada para promover el reciclaje y la sostenibilidad ambiental. Utiliza tecnología de IA avanzada para identificar productos y materiales a partir de fotografías, brindando consejos útiles sobre cómo reciclarlos de manera adecuada y sostenible.
 
+![EcoGPT App Screenshot](img/app.jpg)
+
 ## Funcionalidad
 La aplicación permite a los usuarios cargar imágenes de productos y, mediante el uso de modelos de IA, identifica el tipo de material y ofrece recomendaciones específicas de reciclaje. Estas recomendaciones están diseñadas para ayudar a los usuarios a reciclar de manera más eficiente y contribuir a la reducción de residuos.
 
