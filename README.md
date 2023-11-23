@@ -1,41 +1,31 @@
-# Chef IA - Asistente de Cocina con Inteligencia Artificial
+# EcoGPT
 
 ## Descripción
-Chef IA es una innovadora aplicación de cocina asistida por inteligencia artificial que ayuda a los usuarios a identificar ingredientes a partir de una imagen y sugiere recetas que pueden ser preparadas con esos ingredientes. Utilizando tecnologías de procesamiento de imágenes y modelos de lenguaje avanzados, Chef IA ofrece una experiencia culinaria única y personalizada.
+EcoGPT es una aplicación revolucionaria diseñada para promover el reciclaje y la sostenibilidad ambiental. Utiliza tecnología de IA avanzada para identificar productos y materiales a partir de fotografías, brindando consejos útiles sobre cómo reciclarlos de manera adecuada y sostenible.
 
-![Chef IA App Screenshot](img/app.jpg)
+## Funcionalidad
+La aplicación permite a los usuarios cargar imágenes de productos y, mediante el uso de modelos de IA, identifica el tipo de material y ofrece recomendaciones específicas de reciclaje. Estas recomendaciones están diseñadas para ayudar a los usuarios a reciclar de manera más eficiente y contribuir a la reducción de residuos.
 
-## Características
-- **Análisis de Imágenes de Ingredientes**: Carga una imagen de tus ingredientes y deja que la IA identifique lo que tienes.
-- **Sugerencias de Recetas**: Basado en los ingredientes identificados, la aplicación sugiere un plato que puedes preparar.
-- **Instrucciones de Preparación**: Obtén un paso a paso detallado de cómo preparar el plato sugerido.
-- **Descarga de Recetas**: La aplicación permite descargar la receta completa, incluyendo ingredientes y pasos de preparación.
-- **Generación de Imágenes con DALL-E**: Visualiza un ejemplo del plato terminado generado por IA.
-
-## Cómo usar
-1. **Carga una Imagen**: Sube una foto de los ingredientes que tienes a mano.
-2. **Obtén Sugerencias de Platos**: La IA analizará tu imagen y te dirá qué plato puedes cocinar.
-3. **Sigue las Instrucciones**: Lee y sigue las instrucciones paso a paso para preparar tu plato.
-4. **Descarga la Receta**: Guarda la receta para referencia futura.
-5. **Visualiza el Plato**: Mira una imagen generada por IA de cómo podría verse tu plato.
-
-## Tecnologías Utilizadas
-- Streamlit
-- OpenAI's GPT-3 y GPT-4 Vision
-- Python
-- DALL-E para la generación de imágenes
+## Uso
+Para utilizar EcoGPT, sigue estos pasos:
+1. Carga una imagen del producto que deseas reciclar.
+2. Haz clic en "Analizar Producto".
+3. Recibe la identificación del producto y material.
+4. Sigue los consejos de reciclaje proporcionados.
 
 ## Instalación
-Para ejecutar Chef IA localmente, necesitarás instalar Streamlit y otras dependencias. Asegúrate también de tener las claves API necesarias para OpenAI.
-pip install streamlit openai pillow requests
+Clona este repositorio en tu máquina local utilizando `git clone https://github.com/nicoig/ecoGPT.git`.
 
-## Ejecución
-Para iniciar la aplicación, ejecuta:
-streamlit run app.py
+Instala todas las dependencias necesarias con `pip install -r requirements.txt`.
 
-## Nota Importante
-Chef IA es una herramienta de asistencia culinaria y está diseñada para ofrecer sugerencias basadas en inteligencia artificial. Siempre se recomienda utilizar el criterio personal al cocinar.
+Asegúrate de configurar tus claves API en un archivo `.env` basándote en el ejemplo proporcionado por `.env.example`.
 
-## Autores
-NicoIG
+## Tecnologías Utilizadas
+- Python
+- Streamlit
+- OpenAI API
+- LangChain
 
+
+## Autor
+@NicoIG
