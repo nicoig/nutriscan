@@ -45,9 +45,20 @@ def encode_image(image_file):
 
 # Configura el título y subtítulo de la aplicación en Streamlit
 st.title("EcoGPT")
-st.subheader("Asistencia inteligente para el reciclaje de productos")
+
+# Subtítulo descriptivo del proyecto
+st.markdown("""
+    <style>
+    .small-font {
+        font-size:18px !important;
+    }
+    </style>
+    <p class="small-font">Soy EcoGPT, carga la imagen del producto que deseas reciclar y te daré algunos consejos</p>
+    """, unsafe_allow_html=True)
+
+
 # Imagen
-st.image('img/robot.png', width=350)
+st.image('img/robot.png', width=250)
 
 # Carga de imagen por el usuario
 uploaded_file = st.file_uploader("Carga una imagen del producto que deseas reciclar", type=["jpg", "png", "jpeg"])
