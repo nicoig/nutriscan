@@ -17,23 +17,19 @@
 # agregar en variables de entorno
 # PYTHON_VERSION = 3.9.12
 
-# git remote set-url origin https://github.com/nicoig/LabelGPT.git
+# git remote set-url origin https://github.com/nicoig/nutriscan.git
 # git remote -v
 # git push -u origin main
 
-
-################################################
-
-
-import streamlit as st
+from flask import Flask, request, render_template_string, jsonify, send_from_directory
 import base64
 from langchain.chat_models import ChatOpenAI
-from langchain.schema.messages import HumanMessage, AIMessage
-from langchain.prompts import PromptTemplate
-from langchain.schema import StrOutputParser
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+
+app = Flask(__name__)
+application = app
 
 # Cargar variables de entorno
 load_dotenv()
@@ -46,8 +42,7 @@ def encode_image(image_file):
 # Función Texto a Voz
 def tts(text):
     if api_key == '':
-        st.error('Por favor, configura tu clave API de OpenAI en el archivo .env')
-        return None
+        return None, 'Por favor, configura tu clave API de OpenAI en el archivo .env'
     else:
         try:
             client = OpenAI(api_key=api_key)
@@ -56,76 +51,267 @@ def tts(text):
                 voice="echo",   # Voz por defecto
                 input=text,
             )
-            return response.content
+            return response.content, None
         except Exception as error:
-            st.error(f"Se produjo un error al generar el habla: {error}")
-            return None
+            return None, f"Se produjo un error al generar el habla: {error}"
 
 # Función para convertir audio a base64 y crear elemento HTML para audio
 def get_audio_file_content(audio_content):
     base64_audio = base64.b64encode(audio_content).decode('utf-8')
-    audio_html = f'<audio controls autoplay><source src="data:audio/mp3;base64,{base64_audio}" type="audio/mpeg"></audio>'
-    return audio_html
+    return f'data:audio/mp3;base64,{base64_audio}'
 
-# Diseño de la Aplicación Streamlit para LabelGPT
-st.title("LabelGPT")
+# Ruta para servir imágenes estáticas
+@app.route('/img/<path:filename>')
+def serve_image(filename):
+    return send_from_directory('img', filename)
 
-# Configura el subtítulo de la aplicación con un tamaño de fuente más pequeño
-st.markdown("""
-    <style>
-    .subheader-font {
-        font-size:16px !important;
-    }
+# Plantilla HTML para la aplicación
+html_template = """
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+        <style>
+        body {
+            background-color: #222;
+            color: #ddd;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .subheader-font {
+            font-size:16px !important;
+        }
+        .file-input {
+            margin: 10px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .audio-output {
+            margin: 20px 0;
+        }
+        form {
+            display: inline-block;
+            text-align: left;
+            margin-top: 20px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .file-input input[type="file"] {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .file-input input[type="file"]:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            white-space: pre-wrap;
+            text-align: left;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #333;
+            border-radius: 10px;
+            max-width: 80%;
+            margin: 20px auto;
+        }
+        .loader {
+            border: 6px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 6px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 10px auto 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hidden {
+            display: none;
+        }
+        #preview {
+            margin-top: 10px;
+            max-width: 300px;
+            max-height: 300px;
+            border: 1px solid #ddd;
+            display: none;
+        }
     </style>
-    """, unsafe_allow_html=True)
+</head>
+<body>
+    <img src="/img/nutriscan.jpg" width="220" alt="Etiqueta del Producto" style="display: block; margin: 0 auto;">
+    <p class="subheader-font">¡Hola! Soy NutriScan, tu asistente IA. Carga una foto de la etiqueta de ingredientes de tu alimento e indícame si tienes alguna condición alimenticia. Yo identificaré si ese alimento es perjudicial para tu salud.</p>
+    <form id="analysis-form" method="post" enctype="multipart/form-data">
+        <div class="file-input">
+            <label for="image" class="file-label">Sube una imagen de la etiqueta del producto:</label><br>
+            <input type="file" id="image" name="image" onchange="showPreview(event)"><br><br>
+            <img id="preview" alt="Vista previa de la imagen">
+        </div>
+        <label for="condition">Ingresa cualquier condición de salud o restricción dietética (opcional):</label><br>
+        <input type="text" id="condition" name="condition"><br><br>
+        <input type="submit" value="Analizar Etiqueta">
+    </form>
+    <div id="loader" class="loader hidden"></div>
+    <p id="loading-text" class="hidden">Cargando Respuesta...</p>
+    <div id="result" class="response hidden">
+        <h2>Análisis de Ingredientes Según la Condición Ingresada:</h2>
+        <p id="analisis_ingredientes"></p>
+        <div class="audio-output hidden" id="audio-output">
+            <h2>Audio del Producto:</h2>
+            <audio controls id="audio" autoplay></audio>
+        </div>
+    </div>
+    <script>
+        function showLoader() {
+            document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('loading-text').classList.remove('hidden');
+        }
 
-st.markdown('<p class="subheader-font">LabelGPT: tu asistente IA para entender etiquetas nutricionales y seleccionar alimentos para dietas especiales.</p>', unsafe_allow_html=True)
+        function hideLoader() {
+            document.getElementById('loader').classList.add('hidden');
+            document.getElementById('loading-text').classList.add('hidden');
+        }
 
-# Imagen
-st.image('img/app.png', width=250)
+        function showResult() {
+            document.getElementById('result').classList.remove('hidden');
+        }
 
+        function setAudioSource(source) {
+            const audioElement = document.getElementById('audio');
+            audioElement.src = source;
+            document.getElementById('audio-output').classList.remove('hidden');
+        }
 
-# Carga de imagen por el usuario
-uploaded_file = st.file_uploader("Sube una imagen de la etiqueta del producto", type=["jpg", "png", "jpeg"])
+        function showPreview(event) {
+            const [file] = event.target.files;
+            if (file) {
+                const preview = document.getElementById('preview');
+                preview.src = URL.createObjectURL(file);
+                preview.style.display = 'block';
+            }
+        }
 
-# Input para condiciones dietéticas específicas
-user_condition = st.text_input("Ingresa cualquier condición de salud o restricción dietética (opcional):")
+        document.getElementById('analysis-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            showLoader();
 
-if st.button("Analizar Etiqueta") and uploaded_file is not None:
-    with st.spinner('Transcribiendo y analizando la etiqueta...'):
-        image = encode_image(uploaded_file)
-        chain = ChatOpenAI(model="gpt-4-vision-preview", max_tokens=1024)
-        
-        # Transcribir la etiqueta
-        transcripcion_msg = chain.invoke(
-            [AIMessage(content="Por favor, identifique la información nutricional y los ingredientes que se muestran en la siguiente imagen. Incluya todos los detalles como calorías, grasas, carbohidratos, proteínas, vitaminas, minerales, y la lista completa de ingredientes."),
-            HumanMessage(content=[{"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image}"}}])
-            ]
+            const formData = new FormData(event.target);
+
+            fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoader();
+                displayText(data.analisis_ingredientes, 6); // Aumenta la velocidad a 25ms por letra
+                showResult();
+
+                // Solicitar el audio después de mostrar el análisis
+                fetch('/generate_audio', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ texto_para_audio: data.analisis_ingredientes })
+                })
+                .then(response => response.json())
+                .then(audioData => {
+                    if (audioData.audio_url) {
+                        setAudioSource(audioData.audio_url);
+                    }
+                });
+            });
+        });
+
+        function displayText(text, speed) {
+            const element = document.getElementById('analisis_ingredientes');
+            let index = 0;
+            element.innerHTML = '';
+            function type() {
+                if (index < text.length) {
+                    element.innerHTML += text[index];
+                    index++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+    </script>
+</body>
+</html>
+"""
+
+@app.route('/', methods=['GET'])
+def index():
+    return render_template_string(html_template)
+
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    uploaded_file = request.files.get("image")
+    user_condition = request.form.get("condition")
+
+    if uploaded_file:
+        # Codificar la imagen
+        image_data = encode_image(uploaded_file)
+        image_url = f"data:image/jpeg;base64,{image_data}"
+
+        # Crear el cliente de OpenAI
+        client = OpenAI(api_key=api_key)
+
+        # Enviar la solicitud al modelo
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": f"Por favor, identifica si hay algún ingrediente en la imagen de la etiqueta que sea perjudicial para una persona con la siguiente condición: {user_condition}. Muestra solo el análisis relevante y no transcribas todos los ingredientes."},
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": image_url}
+                        }
+                    ],
+                }
+            ],
+            max_tokens=1500,
         )
-        st.session_state['transcripcion_etiqueta'] = transcripcion_msg.content
-        st.markdown("**Transcripción de la Etiqueta:**")
-        st.write(st.session_state['transcripcion_etiqueta'])
 
-        # Analizar ingredientes en relación a la condición del usuario
-        prompt_analisis_ingredientes = PromptTemplate.from_template(
-            """
-            Dada la siguiente transcripción de una etiqueta nutricional:
-            {transcription}
-            y considerando la condición dietética específica: {condition}
-            ¿Hay algún ingrediente que podría ser perjudicial para la salud del usuario según su condición?
+        # Extraer el análisis de ingredientes
+        analisis_ingredientes = response.choices[0].message.content
 
-            Output:
-            """
-        )
-        runnable = prompt_analisis_ingredientes | chain | StrOutputParser()
-        st.session_state['analisis_ingredientes'] = runnable.invoke({"transcription": st.session_state['transcripcion_etiqueta'], "condition": user_condition})
-        st.markdown("**Análisis de Ingredientes Según la Condición Ingresada:**")
-        st.write(st.session_state['analisis_ingredientes'])
+        return jsonify({"analisis_ingredientes": analisis_ingredientes})
 
-        # Generar y reproducir audio automáticamente
-        texto_para_audio = st.session_state['analisis_ingredientes']
-        if texto_para_audio:
-            audio_content = tts(texto_para_audio)
-            if audio_content is not None:
-                audio_html = get_audio_file_content(audio_content)
-                st.markdown(audio_html, unsafe_allow_html=True)
+@app.route('/generate_audio', methods=['POST'])
+def generate_audio():
+    data = request.get_json()
+    texto_para_audio = data.get('texto_para_audio')
+
+    if texto_para_audio:
+        audio_content, error = tts(texto_para_audio)
+        if audio_content:
+            audio_url = get_audio_file_content(audio_content)
+            return jsonify({"audio_url": audio_url})
+    return jsonify({"audio_url": None})
+
+if __name__ == '__main__':
+    app.run(debug=True)

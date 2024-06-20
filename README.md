@@ -1,42 +1,53 @@
-# LabelGPT
+# NutriScan
 
-LabelGPT es una aplicación interactiva diseñada para asistir a los usuarios en la comprensión de etiquetas nutricionales utilizando la inteligencia artificial. Especialmente útil para personas con dietas especiales, esta herramienta facilita la selección de alimentos adecuados al proporcionar un análisis detallado de las etiquetas de productos alimenticios.
+NutriScan es tu asistente inteligente para entender las etiquetas nutricionales de tus alimentos favoritos. Con NutriScan, puedes identificar ingredientes y valores nutricionales al instante para elegir alimentos que cuiden de tu salud.
+
+## Descripción
+
+¡Hola! Soy NutriScan, tu asistente IA para entender las etiquetas nutricionales. Descubre la forma más fácil y rápida de identificar ingredientes y valores al instante, ayudándote a elegir alimentos que cuiden de tu salud. Solo sube una foto de la etiqueta y deja que te guíe hacia decisiones más saludables. ¡Empieza ahora y transforma tu alimentación con confianza!
 
 ## Características
 
-- **Análisis de Imágenes**: Usa la IA para analizar fotos de etiquetas nutricionales y transcribir la información.
-- **Asesoramiento Personalizado**: Ofrece recomendaciones basadas en las necesidades dietéticas específicas de los usuarios.
-- **Interfaz Amigable**: Fácil de usar con un diseño intuitivo que mejora la experiencia del usuario.
-- **Soporte para Múltiples Dietas**: Adecuado para una variedad de restricciones dietéticas, como celiaquía, alergias alimentarias, etc.
+- Análisis rápido y preciso de etiquetas nutricionales.
+- Identificación de ingredientes y valores nutricionales.
+- Evaluación de la adecuación de los alimentos según condiciones de salud específicas.
+- Generación de descripciones de audio para las etiquetas analizadas.
 
-## Tecnologías Utilizadas
+## Requisitos
 
-- **Streamlit**: Para crear una interfaz de usuario web interactiva.
-- **LangChain**: Para integrar modelos de IA de OpenAI que incluyen capacidades de visión y procesamiento de lenguaje natural.
-- **Python**: Lenguaje de programación principal.
+- Python 3.7 o superior
+- Flask
+- python-dotenv
+- langchain
+- openai
+- PIL (Pillow)
+- pytesseract
 
-## Configuración y Uso
+## Instalación
 
-Para usar LabelGPT, siga estos pasos:
+1. Clona este repositorio:
+   ```bash
+   git clone https://github.com/nicoig/nutriscan.git
+   cd nutriscan
+Crea un entorno virtual e instale las dependencias:
 
-1. Clone el repositorio en su máquina local.
-2. Instale todas las dependencias necesarias utilizando `pip install -r requirements.txt`.
-3. Configure las claves API necesarias en el archivo `.env`.
-4. Ejecute la aplicación con `streamlit run app.py`.
+python -m venv venv
+source venv/bin/activate  # En Windows usa `venv\Scripts\activate`
+pip install -r requirements.txt
+Crea un archivo .env en el directorio raíz del proyecto con tu clave API de OpenAI:
 
-## Contribuciones
+OPENAI_API_KEY=tu_clave_api_aqui
+Coloca la imagen app.png en la carpeta static.
 
-Las contribuciones son bienvenidas. Si desea contribuir al proyecto, por favor:
+Ejecuta la aplicación:
+python app.py
+Abre tu navegador y visita http://127.0.0.1:5000/ para acceder a NutriScan.
 
-1. Haga un 'fork' del repositorio.
-2. Cree una rama para su característica (`git checkout -b feature/fooBar`).
-3. Haga sus cambios y confirme los mismos (`git commit -am 'Add some fooBar'`).
-4. 'Push' a la rama (`git push origin feature/fooBar`).
-5. Cree una nueva solicitud de 'Pull'.
+Uso
+Sube una imagen de la etiqueta del producto que deseas analizar.
+Ingresa cualquier condición de salud o restricción dietética (opcional).
+Haz clic en "Analizar Etiqueta".
+NutriScan te proporcionará una transcripción de la etiqueta y un análisis de los ingredientes según tu condición de salud ingresada. También puedes escuchar una descripción de audio del análisis.
+Contribuciones
+Las contribuciones son bienvenidas. Si deseas contribuir, por favor, sigue estos pasos:
 
-## Licencia
-
-Distribuido bajo la licencia MIT. Vea `LICENSE` para más información.
-
-## Contacto
-Creado por @NicoIG
